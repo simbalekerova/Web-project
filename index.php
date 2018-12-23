@@ -1,75 +1,75 @@
-<?php
- 
-header ('Content-type: text/html; charset=utf-8');
- 
-require "php/Handler.php";
- 
-$handler = new Handler();
- 
-if($_POST){
-  echo $handler->insert(TABLENAME, "`nickname`, `comment`", array($_POST['nickname'], $_POST['comment']));
-  exit;
-}
- 
-$sql = "SELECT nickname, comment FROM comment ORDER BY id DESC";
- 
-$comments = $handler->select($sql);
+ <?php
+require('Persistence.php');
+$comment_post_ID = 1;
+$db = new Persistence();
+$comments = $db->get_comments($comment_post_ID);
+$has_comments = (count($comments) > 0);
 ?>
-<!doctype html>
-<html>
+
+<!DOCTYPE html>
+<html lang="en-US">
 <head>
+	<title></title>
+	<meta charset="utf-8" />
+
+	<link rel="stylesheet" type="text/css" href="comment.css">
  
- 
-<script src="js/jquery-1.11.1.min.js"></script>
-<script src="js/comments.js"></script>
- 
-<style>
-p{
-    margin: 0;
-    padding: 3px;
-}
-    input#nickname{
-        width: 500px;
-    }
-    textarea {
-        width: 500px;
-    }
-    input#commentbutton{
-        width: 510px;
-    }
-    .span{
-        background-color:#40ce75; 
-    font-weight:bold;
-    font-size:19px;
-    padding:0 7px 0 7px;
-    border-radius:5px;
-    }
-</style>
 </head>
+
+<body id="index" class="home">
+	
  
-<body>
-  <div id="commentsdiv" style="margin: 133px auto; width:500px;">
-    <span id="comments">Комментарии</span>
-    
-        <form id="form">
-      <p><input id="nickname" value="" name="nickname" type="text"/></p>
-      <p><textarea id="comment" name="comment" rows="3"></textarea></p>
-      <input id="commentbutton" type="submit" style="background-color: #6893f4;" value="Оставить комментарий"/>
-    </form>
- 
- 
-  <ul id="commentslist" style="width:500px;margin:20px 0;padding: 0;">
-    <?php
-    
-    foreach ($comments as $row){
-      echo "<li><span class='span'>".$row['nickname'].
-        "</span><p>".$row['comment']."</p></li><hr>"; 
-    }
- 
-    ?>
-  </ul>
-  
-  
-</div>
- 
-</body></html>
+	
+	<section id="comments" class="body">
+	  
+	 
+    <ol id="posts-list" class="hfeed<?php echo($has_comments?' has-comments':''); ?>">
+      <li class="no-comments">Be the first to add a comment.</li>
+      <?php
+        foreach ($comments as &$comment) {
+          ?>
+          <li><article id="comment_<?php echo($comment['id']); ?>" class="hentry">	
+    				<footer class="post-info">
+    					<abbr class="published" title="<?php echo($comment['date']); ?>">
+    						<?php echo( date('d F Y', strtotime($comment['date']) ) ); ?>
+    					</abbr>
+
+    					<address class="vcard author">
+    						By <a class="url fn" href="#"><?php echo($comment['comment_author']); ?></a>
+    					</address>
+    				</footer>
+
+    				<div class="entry-content">
+    					<p><?php echo($comment['comment']); ?></p>
+    				</div>
+    			</article></li>
+          <?php
+        }
+      ?>
+		</ol>
+		
+		<div id="respond">
+
+      <h3>Leave a Comment</h3>
+
+      <form action="post_comment.php" method="post" id="commentform">
+
+        <label for="comment_author" class="required">Your name:</label>
+        <input type="text" name="comment_author" id="comment_author" value="" tabindex="1" required="required">
+        
+        <label for="email" class="required">Your email:</label>
+        <input type="email" name="email" id="email" value="" tabindex="2" required="required">
+
+        <label for="comment" class="required">Your comment:</label>
+        <textarea name="comment" id="comment" rows="10" tabindex="4"  required="required"></textarea>
+
+        <input type="hidden" name="comment_post_ID" value="<?php echo($comment_post_ID); ?>" id="comment_post_ID" />
+        <input name="submit" type="submit" value="Submit comment" />
+        
+      </form>
+      
+    </div>
+			
+	 
+</body>
+</html> 
